@@ -1,8 +1,16 @@
 # CP-001 — Extensible Experiment Registry Foundation
 
-Status: **Proposed — awaiting human approval**  
+Status: **Approved**
 Implementation owner after approval: **Hermes**  
-Scope: design only; this checkpoint does not implement application code.
+Scope: implementation-ready design; this checkpoint does not itself implement application code.
+
+## Canonical specification and document structure
+
+This README is the canonical, complete CP-001 specification. It contains the
+approved design, implementation instructions, acceptance criteria, and review
+gate. The companion files in this directory are intentionally short routing
+records that point to their authoritative sections here; they do not define
+additional or conflicting requirements.
 
 ## 1. Requirements, assumptions, dependencies, and non-goals
 
@@ -18,8 +26,9 @@ The implementation contract is:
    - The sample `hello-agent` entry remains present.
 2. Represent each experiment with a stable name and human-readable description.
 3. Validate registry entries at construction time or through one deterministic validation path:
-   - names are non-empty, trimmed, and unique;
-   - descriptions are non-empty, trimmed;
+   - names and descriptions are normalized by trimming leading and trailing
+     whitespace, then validated as non-empty;
+   - normalized names are unique;
    - malformed registrations fail clearly and deterministically.
 4. Keep listing deterministic and human-readable.
 5. Make the registry the single source of truth; avoid duplicating experiment metadata in CLI branches or tests.
@@ -105,7 +114,9 @@ The module-level default registry is built from the current `EXPERIMENTS` declar
 Validation contract:
 
 - Empty or whitespace-only names and descriptions raise `ValueError`.
-- Leading/trailing whitespace is rejected or normalized consistently; the preferred behavior is normalization followed by validation, documented in tests.
+- Leading/trailing whitespace is normalized before validation. The normalized
+  values are the stored values used for duplicate detection, lookup, and
+  rendering.
 - Duplicate names raise `ValueError` and identify the conflicting name.
 - `get(name)` returns the matching immutable value or `None`; it does not execute anything.
 - An empty registry renders as the empty string.
@@ -294,10 +305,17 @@ CP-001 is complete only when:
 - Codex has independently reviewed the resulting diff against this document.
 - The human has approved merge and checkpoint completion.
 
-At the current stage, only the design artifact exists; implementation and merge are intentionally pending approval.
+At this point, only the approved design artifact exists; implementation and
+merge remain pending their respective checkpoint gates.
 
-## Open decisions requiring approval
+## Approval record
 
-1. Approve the `ExperimentRegistry` foundation as the CP-001 scope.
-2. Approve normalization of leading/trailing whitespace before validation, or require strict rejection instead.
-3. Approve preserving `EXPERIMENTS` as a module-level compatibility symbol while introducing the registry wrapper.
+The human approved CP-001 with the following explicit decisions:
+
+1. Implement the `ExperimentRegistry` foundation described in this document.
+2. Normalize leading and trailing whitespace before validation; surrounding
+   whitespace alone must not reject an otherwise valid registration.
+3. Preserve `EXPERIMENTS` as a module-level compatibility symbol for CP-001.
+   Its removal or replacement requires a separately approved future checkpoint.
+
+No CP-001 architecture or contract decisions remain open.
